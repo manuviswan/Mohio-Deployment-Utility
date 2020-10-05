@@ -1,4 +1,5 @@
 ﻿using System;
+// CR: Clean up unused namespace (Ctrl+.)
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -13,12 +14,18 @@ namespace Mohio_Deployment_Utility
 {
     public partial class MDU : Form
     {
-
+        // TODO: Move connection string to app.config. That would make it easier to change it without recompiling code
         //SQL
         string connString = @"Data Source=LAPTOP-DEV01\SQLEXPRESS01;Initial Catalog=MohioDeployment;User ID=sa;Password=sa_manu33";
 
+        // TODO : Overall, the naming convension doesn't seem strictly followed. Some places "m_" is used in method variable,
+        // while in other places, it is not followed in method variables.
+        // Standardize something, and follow it. A suggestion would be
+        // use "_camelCase" for any class level member variable
+        // use "PascalCase" for Class Names, Property Names and Method Names
+        // use "camelCase" for any method variable
         //VARIABLES
-        string pho = "";
+        string pho = ""; // TODO: Better initialiize with string.Empty, more verbose
         string practice = "";
         string pid = "";
         string mispid = "";
@@ -44,6 +51,7 @@ namespace Mohio_Deployment_Utility
         }
 
         //FORM CONTROL EVENTS
+        // TODO: Remove empty methods/events
         private void MDU_Load(object sender, EventArgs e)
         {
 
@@ -54,7 +62,7 @@ namespace Mohio_Deployment_Utility
         private void cbPHO_SelectedValueChanged(object sender, EventArgs e)
         {
             ResetPHO();
-            pho = cbPHO.Text;
+            pho = cbPHO.Text; // TODO:  cbPHO is a combobox, SHOULD use cbPHO.SelectedText instead of cbPHO.Text
             mohioDB = setMohioDB(pho);
             FillPracticeList(pho);
         }
@@ -78,6 +86,8 @@ namespace Mohio_Deployment_Utility
         private void cbPMS_SelectedValueChanged(object sender, EventArgs e)
         {
             ResetPMS();
+            // TODO : Again, SelectedText should be used.
+            // Do SelectedText instead of Text for every combo, not commenting any further on same topic
             pms = cbPMS.Text;
         }
 
@@ -136,7 +146,23 @@ namespace Mohio_Deployment_Utility
         //FUNCTIONS
         private String setMohioDB(string pho)
         {
-            String _mohioDB = "";
+            String _mohioDB = "";  //TODO: More of an optional comment, use var instead of explicit types like string in methods. makes it consistent to read.
+
+            // TODO: Could optimize this switch as
+            //switch (pho)
+            //{
+            //    case "AHPLUS":
+            //    case "AKPHO":
+            //    case "EBPHA":
+            //        _mohioDB = $"Mohio_{pho}";
+            //        break;
+            //    case "NHC":
+            //    case "WKO":
+            //    case "WPHO":
+            //        _mohioDB = "MohioTehononga";
+            //        break;
+            //}
+
 
             switch (pho)
             {
@@ -173,6 +199,7 @@ namespace Mohio_Deployment_Utility
 
         private void ResetPHO()
         {
+            // TODO: Use string.Empty instead of ""
             pho = "";
             practice = "";
             pid = "";
@@ -230,6 +257,7 @@ namespace Mohio_Deployment_Utility
         {
             cbPractice.Items.Clear();
 
+            // Since this access Database, it would be good idea to use Aschronous programming here. Read more about async-await
             SqlConnection conn;
             conn = new SqlConnection(connString);
 
@@ -237,6 +265,7 @@ namespace Mohio_Deployment_Utility
 
             SqlCommand cmd;
             SqlDataReader dataReader;
+            // TODO: This is strictly "NEVER DO APPROACH". This can lead to Sql Injection. Opt for Parameterized Queries instead
             String query = $"select Practice from [MohioDeployment].dbo.PracticeData where PHO='{pho}';";
 
             cmd = new SqlCommand(query, conn);
@@ -248,6 +277,7 @@ namespace Mohio_Deployment_Utility
                 cbPractice.Items.Add(dataReader.GetValue(0));
             }
 
+            // TODO: A better way to do this would be to use the 'using' syntax. It is much more cleaner and does the dispose for you.
             dataReader.Close();
             cmd.Dispose();
             conn.Close();
@@ -260,6 +290,7 @@ namespace Mohio_Deployment_Utility
             SqlConnection conn;
             conn = new SqlConnection(connString);
 
+            // TODO: All the comments mentioned in above method applies here as well.
             conn.Open();
 
             SqlCommand cmd;
@@ -286,6 +317,7 @@ namespace Mohio_Deployment_Utility
             tbMohioUser.Clear();
             tbMohioPassword.Clear();
 
+            // TODO: and here too
             SqlConnection conn;
             conn = new SqlConnection(connString);
 
@@ -308,6 +340,8 @@ namespace Mohio_Deployment_Utility
 
             tbMohioUser.Text = mohioUser;
 
+            // TODO: Could make the following if condition one liner with terinary operator
+            // tbMohioPassword.Text = mohioPass == null ? string.Empty : mohioPass;
             if (mohioPass != null)
             {
                 tbMohioPassword.Text = mohioPass;
@@ -325,6 +359,19 @@ namespace Mohio_Deployment_Utility
         private void FillMID(string pho)
         {
             tbMISID.Clear();
+
+            // TODO: May be a better approach for this kind of mapping would be to use a Dictionary where
+            // Key is AHPLUS etc, and Value is that number.
+            // For Example, you could declare a dictionary as private variable to class
+            //
+            // private Dictionary<string,string> _midDictionary= new
+            //{
+            //  ["AHPLUS"] = "681316",
+            //  ["AKPHO"]  = "585702"
+            //}
+            // and then in this method,
+            // mispid =  $"{_midDictionary[pho]}{pid}";
+            //
 
             switch (pho)
             {
@@ -362,6 +409,7 @@ namespace Mohio_Deployment_Utility
 
         private void GenerateMohioPassword(string pid)
         {
+            // TODO: Previous comments in method with Sql is applicable here too
             SqlConnection conn;
             conn = new SqlConnection(connString);
 
@@ -413,6 +461,7 @@ namespace Mohio_Deployment_Utility
             dbPass = tbPassword.Text;
 
             string _value = "";
+            // TODO: Connection string should be stored in app.config and read from config here
             if (pms == "MedTech-32")
             {
                 _value = $"Provider = LCPI.IBProvider.5.Free;User ID={dbUser};Password={dbPass}; Location={server}; auto_commit=true;";
@@ -427,6 +476,7 @@ namespace Mohio_Deployment_Utility
 
         private string GenerateQuery(bool @checked, string table, string field, string value)
         {
+            // TODO : Sql Comments applicable here too
             string _mepmsconnQuery = "";
             if (@checked == false)
             {
@@ -442,6 +492,7 @@ namespace Mohio_Deployment_Utility
 
         private void CopyQueriesToClipboard()
         {
+            // TODO: Could use Environment.NewLine instead of '\r\n'. And Of course, use $"{}" concatnation instead of +.
             Clipboard.SetText(mePmsConnQuery + "\r\n" + meWssConnQuery + "\r\n" + rmPmsConnQuery);
         }
     }
